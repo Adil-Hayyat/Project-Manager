@@ -1,0 +1,26 @@
+Position: Backend Developer (Node.js)
+Company: Dot2Shape
+
+About the role:
+We are looking for a Backend Developer to join our engineering team and help
+build and maintain our core API services.
+
+Required Qualifications:
+- Bachelor's degree in Computer Science or a related field
+- 2+ years of professional experience with Node.js
+- Solid understanding of REST API design
+- Experience with PostgreSQL or another relational database
+- Familiarity with Git and collaborative version control workflows
+
+Preferred Qualifications:
+- Experience with TypeScript
+- Experience with cloud platforms (AWS, GCP, or Azure)
+- Exposure to Docker and containerized deployments
+- Experience writing automated tests (unit/integration)
+
+Responsibilities:
+- Design, build, and maintain RESTful APIs
+- Write clean, tested, maintainable code
+- Collaborate with frontend developers and product managers
+- Participate in code reviews and technical design discussions
+- Monitor and improve API performance and reliability
