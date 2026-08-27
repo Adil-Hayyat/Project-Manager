@@ -46,7 +46,7 @@ export default function NewCandidatePage() {
 
       const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
       pdfjs.GlobalWorkerOptions.workerSrc =
-        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+        "https://unpkg.com/pdfjs-dist@6.2.108/legacy/build/pdf.worker.min.mjs";
 
       const buffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: buffer }).promise;
