@@ -1,4 +1,4 @@
-# Dot2Shape — AI Recruitment Screening Automation
+# Recruite_AI — AI Recruitment Screening Automation
 
 An AI-powered system that automatically screens candidate CVs against a Job
 Description (JD), scores the match, and gives HR a structured, evidence-based
@@ -94,7 +94,7 @@ Core features implemented:
 ### 4.3 App
 ```bash
 git clone <your-repo-url>
-cd dot2shape-screening
+cd recruite-ai
 npm install
 cp .env.example .env.local
 # fill in .env.local with your Supabase + OpenAI + n8n values (see section 5)

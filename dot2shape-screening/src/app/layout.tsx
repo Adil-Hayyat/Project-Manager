@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import AuthHeader from "@/components/AuthHeader";
 
 export const metadata: Metadata = {
-  title: "Dot2Shape Recruitment Screening",
-  description: "AI-powered CV vs JD screening tool for HR",
+  title: "Recruite_AI | AI Recruitment Screening",
+  description: "AI-powered CV and job description screening for HR teams.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

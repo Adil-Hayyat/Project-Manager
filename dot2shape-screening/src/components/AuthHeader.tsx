@@ -32,7 +32,7 @@ export default function AuthHeader() {
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="text-lg font-semibold tracking-tight text-slate-900">
-            Dot2Shape <span className="text-indigo-600">Screening</span>
+            Recruite_AI
           </Link>
 
           <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
@@ -67,7 +67,7 @@ export default function AuthHeader() {
     <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/dashboard" className="text-lg font-semibold tracking-tight text-slate-900">
-          Dot2Shape <span className="text-indigo-600">Screening</span>
+          Recruite_AI
         </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">

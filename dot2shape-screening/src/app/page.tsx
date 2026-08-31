@@ -58,7 +58,7 @@ export default function HomePage() {
               Hire faster with smarter CV-to-job screening.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
-              Dot2Shape Screening helps HR teams assess candidate fit in minutes, using AI to compare CVs against job requirements and surface clear, structured recommendations.
+              Recruite_AI helps HR teams assess candidate fit in minutes, using AI to compare CVs against job requirements and surface clear, structured recommendations.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link
@@ -189,9 +189,9 @@ export default function HomePage() {
       <footer className="border-t border-slate-200 pt-8 text-sm text-slate-500">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="font-semibold text-slate-900">
-            Dot2Shape <span className="text-indigo-600">Screening</span>
+            Recruite_AI
           </div>
-          <div>© {new Date().getFullYear()} Dot2Shape Screening</div>
+          <div>© {new Date().getFullYear()} Recruite_AI</div>
         </div>
       </footer>
     </div>

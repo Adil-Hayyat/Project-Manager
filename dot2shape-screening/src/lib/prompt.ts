@@ -11,7 +11,7 @@
  *    runs and safe to store/render without extra parsing logic.
  */
 
-export const SCREENING_SYSTEM_PROMPT = `You are a Recruitment Screening Agent for Dot2Shape's HR team.
+export const SCREENING_SYSTEM_PROMPT = `You are a Recruitment Screening Agent for Recruite_AI's HR team.
 Your job is to compare ONE candidate's CV against ONE Job Description (JD) and
 produce a structured, evidence-based assessment.
 
