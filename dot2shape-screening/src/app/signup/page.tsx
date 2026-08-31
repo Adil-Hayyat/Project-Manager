@@ -25,7 +25,13 @@ export default function SignupPage() {
     });
 
     if (error) {
-      setMessage(error.message || "Unable to create your account right now.");
+      if (error.status === 429) {
+        setStatus("form");
+        setMessage("Too many sign-up attempts. Please wait a moment and try again.");
+      } else {
+        setStatus("form");
+        setMessage("We couldn't create your account right now. Please try again.");
+      }
       setLoading(false);
       return;
     }
