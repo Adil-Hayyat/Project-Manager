@@ -1,0 +1,391 @@
+[
+  {
+    "name": "W1 - Retell Outbound Dialer (MultiVisions)",
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "a1000001-0000-0000-0000-000000000001",
+        "name": "Start Calling (Manual)",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [-580, 0]
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "REPLACE_WITH_LEADS_SPREADSHEET_ID"
+          },
+          "sheetName": {
+            "__rl": true,
+            "mode": "list",
+            "value": "Leads"
+          },
+          "options": {}
+        },
+        "id": "a1000001-0000-0000-0000-000000000002",
+        "name": "Get Leads",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [-380, 0],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "REPLACE",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.Status }}",
+                "rightValue": "New",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "a1000001-0000-0000-0000-000000000003",
+        "name": "Only Status = New",
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.2,
+        "position": [-180, 0]
+      },
+      {
+        "parameters": {
+          "batchSize": 1,
+          "options": {}
+        },
+        "id": "a1000001-0000-0000-0000-000000000004",
+        "name": "One Lead At A Time",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [20, 0]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://api.retellai.com/v2/create-phone-call",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({\n  from_number: \"+1XXXXXXXXXX\",\n  to_number: $json.Phone,\n  override_agent_id: \"REPLACE_WITH_RETELL_AGENT_ID\",\n  retell_llm_dynamic_variables: {\n    company_name: $json.Company || \"\",\n    contact_name: $json.Contact || \"\"\n  },\n  metadata: {\n    phone: $json.Phone,\n    company: $json.Company || \"\"\n  }\n}) }}",
+          "options": {}
+        },
+        "id": "a1000001-0000-0000-0000-000000000005",
+        "name": "Retell - Create Phone Call",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [260, -20],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "REPLACE",
+            "name": "Retell API Key"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "REPLACE_WITH_LEADS_SPREADSHEET_ID"
+          },
+          "sheetName": {
+            "__rl": true,
+            "mode": "list",
+            "value": "Leads"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Phone": "={{ $('One Lead At A Time').item.json.Phone }}",
+              "Status": "Calling",
+              "Call ID": "={{ $json.call_id }}"
+            },
+            "matchingColumns": ["Phone"]
+          },
+          "options": {}
+        },
+        "id": "a1000001-0000-0000-0000-000000000006",
+        "name": "Mark As Calling",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [480, -20],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "REPLACE",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 90
+        },
+        "id": "a1000001-0000-0000-0000-000000000007",
+        "name": "Wait 90s Between Calls",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [680, -20]
+      }
+    ],
+    "connections": {
+      "Start Calling (Manual)": {
+        "main": [[{ "node": "Get Leads", "type": "main", "index": 0 }]]
+      },
+      "Get Leads": {
+        "main": [[{ "node": "Only Status = New", "type": "main", "index": 0 }]]
+      },
+      "Only Status = New": {
+        "main": [[{ "node": "One Lead At A Time", "type": "main", "index": 0 }]]
+      },
+      "One Lead At A Time": {
+        "main": [
+          [],
+          [{ "node": "Retell - Create Phone Call", "type": "main", "index": 0 }]
+        ]
+      },
+      "Retell - Create Phone Call": {
+        "main": [[{ "node": "Mark As Calling", "type": "main", "index": 0 }]]
+      },
+      "Mark As Calling": {
+        "main": [[{ "node": "Wait 90s Between Calls", "type": "main", "index": 0 }]]
+      },
+      "Wait 90s Between Calls": {
+        "main": [[{ "node": "One Lead At A Time", "type": "main", "index": 0 }]]
+      }
+    },
+    "settings": { "executionOrder": "v1" },
+    "pinData": {}
+  },
+  {
+    "name": "W2 - Retell Post-Call Handler (MultiVisions)",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "retell-call-events",
+          "responseMode": "onReceived",
+          "options": {}
+        },
+        "id": "b2000001-0000-0000-0000-000000000001",
+        "name": "Retell Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [-660, 0],
+        "webhookId": "retell-call-events"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.body.event }}",
+                "rightValue": "call_analyzed",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "b2000001-0000-0000-0000-000000000002",
+        "name": "Is call_analyzed?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [-440, 0]
+      },
+      {
+        "parameters": {
+          "jsCode": "const call = $json.body.call || {};\nconst analysis = call.call_analysis || {};\nconst custom = analysis.custom_analysis_data || {};\nconst meta = call.metadata || {};\n\nreturn [{\n  json: {\n    call_id: call.call_id || '',\n    phone: meta.phone || call.to_number || '',\n    company: meta.company || '',\n    call_status: call.call_status || '',\n    disconnection_reason: call.disconnection_reason || '',\n    summary: analysis.call_summary || '',\n    sentiment: analysis.user_sentiment || '',\n    decision_maker_reached: custom.decision_maker_reached === true,\n    interested: custom.interested === true,\n    do_not_call: custom.do_not_call === true,\n    contact_name: custom.contact_name || '',\n    email_address: (custom.email_address || '').trim().toLowerCase(),\n    printer_brands: custom.printer_brands || '',\n    printer_models: custom.printer_models || '',\n    callback_time: custom.callback_time || '',\n    callback_person: custom.callback_person || ''\n  }\n}];"
+        },
+        "id": "b2000001-0000-0000-0000-000000000003",
+        "name": "Extract Call Results",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [-220, -20]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "leftValue": "={{ $json.email_address }}",
+                "rightValue": "@",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "leftValue": "={{ $json.do_not_call }}",
+                "rightValue": false,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "b2000001-0000-0000-0000-000000000004",
+        "name": "Got Valid Email?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [0, -20]
+      },
+      {
+        "parameters": {
+          "sendTo": "={{ $json.email_address }}",
+          "subject": "MultiVisions - Toner and Cartridge Pricing (15% Off Promo)",
+          "emailType": "text",
+          "message": "=Hi {{ $json.contact_name || 'there' }},\n\nThank you for taking my call today. As promised, here is our pricing information for printer toner and cartridges.\n\nWe currently have a 15% off promo on printer ink, toners, and cartridges. We supply genuine and compatible cartridges for HP, Brother, Canon, Xerox, Lexmark, Ricoh, Kyocera, and other major brands, with fast delivery across Canada.\n\n{{ $json.printer_brands ? 'Your printer brands: ' + $json.printer_brands : '' }}\n{{ $json.printer_models ? 'Your printer models: ' + $json.printer_models : 'If you can reply with your printer model numbers, I will send you exact pricing for your machines.' }}\n\nOur full price list and catalog are attached. If you need a quote at any time, just reply to this email and we will get back to you quickly.\n\nBest regards,\nAlex\nMultiVisions\nMontreal, Canada",
+          "options": {}
+        },
+        "id": "b2000001-0000-0000-0000-000000000005",
+        "name": "Send Price List Email",
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [240, -120],
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "REPLACE",
+            "name": "Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "REPLACE_WITH_LEADS_SPREADSHEET_ID"
+          },
+          "sheetName": {
+            "__rl": true,
+            "mode": "list",
+            "value": "Leads"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Phone": "={{ $('Extract Call Results').item.json.phone }}",
+              "Status": "Qualified - Email Sent",
+              "Contact": "={{ $('Extract Call Results').item.json.contact_name }}",
+              "Email": "={{ $('Extract Call Results').item.json.email_address }}",
+              "Brands": "={{ $('Extract Call Results').item.json.printer_brands }}",
+              "Models": "={{ $('Extract Call Results').item.json.printer_models }}",
+              "Summary": "={{ $('Extract Call Results').item.json.summary }}"
+            },
+            "matchingColumns": ["Phone"]
+          },
+          "options": {}
+        },
+        "id": "b2000001-0000-0000-0000-000000000006",
+        "name": "Log Qualified Lead",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [460, -120],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "REPLACE",
+            "name": "Google Sheets account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "REPLACE_WITH_LEADS_SPREADSHEET_ID"
+          },
+          "sheetName": {
+            "__rl": true,
+            "mode": "list",
+            "value": "Leads"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Phone": "={{ $json.phone }}",
+              "Status": "={{ $json.do_not_call ? 'Do Not Call' : ($json.callback_time ? 'Callback: ' + $json.callback_time + ($json.callback_person ? ' (' + $json.callback_person + ')' : '') : 'Not Interested / No Email') }}",
+              "Summary": "={{ $json.summary }}"
+            },
+            "matchingColumns": ["Phone"]
+          },
+          "options": {}
+        },
+        "id": "b2000001-0000-0000-0000-000000000007",
+        "name": "Log Not Qualified",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [240, 100],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "REPLACE",
+            "name": "Google Sheets account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Retell Webhook": {
+        "main": [[{ "node": "Is call_analyzed?", "type": "main", "index": 0 }]]
+      },
+      "Is call_analyzed?": {
+        "main": [
+          [{ "node": "Extract Call Results", "type": "main", "index": 0 }],
+          []
+        ]
+      },
+      "Extract Call Results": {
+        "main": [[{ "node": "Got Valid Email?", "type": "main", "index": 0 }]]
+      },
+      "Got Valid Email?": {
+        "main": [
+          [{ "node": "Send Price List Email", "type": "main", "index": 0 }],
+          [{ "node": "Log Not Qualified", "type": "main", "index": 0 }]
+        ]
+      },
+      "Send Price List Email": {
+        "main": [[{ "node": "Log Qualified Lead", "type": "main", "index": 0 }]]
+      }
+    },
+    "settings": { "executionOrder": "v1" },
+    "pinData": {}
+  }
+]
